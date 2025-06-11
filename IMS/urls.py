@@ -25,6 +25,10 @@ router.register(r"poc", PocTicketViewSet, basename="Poc_Update")
 
 
 urlpatterns = [
-    path("", include(router.urls))
+    path("", include(router.urls)),
+    path('login/', Login.as_view(), name='custom_login'),
+    path("logout/",LogoutView.as_view(), name = "custom_logout"),
+    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
 ] + static(settings.MEDIA_URL , document_root = settings.MEDIA_ROOT)

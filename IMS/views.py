@@ -16,10 +16,9 @@ from rest_framework_simplejwt.views import (
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from IMS.permissions import Rolepermissions
+from IMS.permissions import *
 from rest_framework import viewsets
 
-# Create your views here.
 
 
 class EmployeeViewSet(viewsets.ModelViewSet):
@@ -54,7 +53,6 @@ class StakeHolderViewSet(viewsets.ModelViewSet):
     queryset = Stack_holder.objects.all()
     serializer_class = StakeHolderSerializer
     
-    
 class TicketViewSet(viewsets.ModelViewSet):
     queryset = Incident_ticket.objects.all()
     serializer_class = TicketSerializer
@@ -63,40 +61,50 @@ class StatusViewSet(viewsets.ModelViewSet):
     queryset = Status.objects.all()
     serializer_class = StatusSerializer
 
-
-# @permission_classes[(IsAuthenticated, Rolepermissions)]
-# @authentication_classes[(JWTAuthentication)]
 class StatusUpdateViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated, Rolepermissions]
+    authentication_classes = [JWTAuthentication]
     queryset = Incident_ticket.objects.all()
     serializer_class = StatusUpdate
-
+    
 class PocTicketViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated, Rolepermissions]
+    authentication_classes = [JWTAuthentication]
     queryset = Incident_ticket.objects.all()
     serializer_class = PocTicketSerializer
 
 
+    
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
 
-# class Login(APIView):
-#     def post(self, request):
-#         email = request.data.get('email')
-#         password = request.data.get('password')
 
-#         user = authenticate(email = email, password = password)
+class Login(APIView):
+    def post(self, request):
+        email = request.data.get('email')
+        password = request.data.get('password')
+        print(email,password)
+        
+        user = authenticate(email = email, password = password)
 
-#         if user is not None:
-#             refresh = RefreshToken.for_user(user)
+        if user is not None:
+            refresh = RefreshToken.for_user(user)
 
-#             return Response({
-#                 'access token': str(refresh.access_token),
-#                 'refresh token': str(refresh),
-#             })
-#         else:
-#             return Response({'error': 'Invalid username or password'}, status = status.HTTP_401_UNAUTHORIZED)
+            return Response({
+                'access token': str(refresh.access_token),
+                'refresh token': str(refresh),
+            })
+        else:
+            return Response({'error': 'Invalid email or password'}, status = status.HTTP_401_UNAUTHORIZED)
 
-# @api_view(["POST"])
-# def Signout(request):
-    # logout(request)
-    # return Response("Logged out successfullyyy  !!!")
 
+class LogoutView(APIView):
+    def post(self, request):
+        try:
+            refresh_token = request.data["refresh"]
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response(status=status.HTTP_205_RESET_CONTENT)
+        
+        except Exception as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST, data={"error": str(e)})

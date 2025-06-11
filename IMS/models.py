@@ -30,6 +30,9 @@ class CustomUserManager(BaseUserManager):
 class Role(models.Model):
     id = models.AutoField(primary_key = True)
     Name = models.CharField(max_length = 100)
+    
+    def __str__(self):
+        return f"Role: {self.Name}"
 
 class MyUser(AbstractUser):
     id = models.AutoField(primary_key=True)
@@ -37,12 +40,15 @@ class MyUser(AbstractUser):
     email = models.EmailField(("email address"), unique=True)
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = [] 
-    objects = CustomUserManager()     
-    Role = models.ForeignKey(Role, blank = True ,  on_delete = models.CASCADE, default="1")
+    objects = CustomUserManager()       
+    Role = models.ForeignKey(Role, blank = True ,  on_delete = models.CASCADE, default= 1)
 
 class Department(models.Model):
     department_id = models.AutoField(primary_key = True)
     Name = models.CharField(max_length = 50)
+    
+    def __str__(self):
+        return f"Department: {self.Name}"
 
 class Employee(models.Model):
     employee_id = models.AutoField(primary_key = True)
@@ -72,6 +78,9 @@ class Designation(models.Model):
     id = models.AutoField(primary_key = True)
     Name = models.CharField(max_length = 100)
     department_id = models.ForeignKey(Department, on_delete = models.CASCADE)
+    
+    def __str__(self):
+        return f"Designation: {self.Name}"
 
 class Stack_holder(models.Model):
     id = models.AutoField(primary_key = True)

@@ -32,16 +32,22 @@ class EmployeeSerializer(serializers.ModelSerializer):
     #  ---Validate data contains user input
     def create(self, validated_data):
         
+        Password = validated_data["user_id"].pop("password")
+        
         # ---User Creation
         Userobj = MyUser.objects.create(
             **validated_data.pop("user_id")
         )
+        Userobj.set_password(Password)
+        Userobj.save()
         
         #Emplyee Creation
         employee = Employee.objects.create(
             user_id = Userobj,
             **validated_data
         )
+        employee.save()
+        
         return employee
     
         
