@@ -54,6 +54,8 @@ class StakeHolderViewSet(viewsets.ModelViewSet):
     serializer_class = StakeHolderSerializer
     
 class TicketViewSet(viewsets.ModelViewSet):
+    # permission_classes = [IsAuthenticated, Rolepermissions]
+    # authentication_classes = [JWTAuthentication]
     queryset = Incident_ticket.objects.all()
     serializer_class = TicketSerializer
     
