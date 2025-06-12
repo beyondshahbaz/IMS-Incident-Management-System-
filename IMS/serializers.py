@@ -252,6 +252,4 @@ class PocTicketSerializer(serializers.ModelSerializer):
         
         
         
-        
-        
-        
+         

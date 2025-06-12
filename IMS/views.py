@@ -110,3 +110,27 @@ class LogoutView(APIView):
         
         except Exception as e:
             return Response(status=status.HTTP_400_BAD_REQUEST, data={"error": str(e)})
+        
+        
+class ResetPassword(APIView):
+    def post(self, request):
+        try:
+            givendata = request.data
+            email = givendata.get('email')
+            password = givendata.get('password')
+            newpassword = givendata.get('newpassword')
+        
+            user = authenticate(email = email, password = password)
+            
+            if user is not None:
+                userdata = MyUser.objects.get(email = email)
+                print(userdata.password)
+                if userdata.check_password(password):
+                    user.set_password(newpassword)
+                    user.save()
+                    return Response("Password Reset successfullyy !!")
+                else:
+                    return Response("You've entered wrong Password...!!")
+                
+        except Exception as e :
+            return Response(str(e))

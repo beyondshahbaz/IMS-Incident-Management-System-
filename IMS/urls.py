@@ -30,5 +30,6 @@ urlpatterns = [
     path("logout/",LogoutView.as_view(), name = "custom_logout"),
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path("resetpassword/", ResetPassword.as_view(), name = "resetpassword"),
 
 ] + static(settings.MEDIA_URL , document_root = settings.MEDIA_ROOT)
