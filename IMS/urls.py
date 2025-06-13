@@ -31,5 +31,7 @@ urlpatterns = [
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path("resetpassword/", ResetPassword.as_view(), name = "resetpassword"),
-
+    path("forgetpassword/",Forgetpassword.as_view(), name = "forgetpassword"),
+    path("varifypassword/",varify_password.as_view(), name = "varifyPassword"),
+    path("newpassword/", NewPassword.as_view(), name = "varifiedNewPassword"),
 ] + static(settings.MEDIA_URL , document_root = settings.MEDIA_ROOT)
