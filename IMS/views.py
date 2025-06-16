@@ -18,6 +18,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from IMS.permissions import *
 from rest_framework import viewsets
+from django.http import HttpResponseRedirect
 
 
 
@@ -70,8 +71,8 @@ class StatusUpdateViewSet(viewsets.ModelViewSet):
     serializer_class = StatusUpdate
     
 class PocTicketViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated, Rolepermissions]
-    authentication_classes = [JWTAuthentication]
+    # permission_classes = [IsAuthenticated, Rolepermissions]
+    # authentication_classes = [JWTAuthentication]
     queryset = Incident_ticket.objects.all()
     serializer_class = PocTicketSerializer
 
@@ -110,3 +111,94 @@ class LogoutView(APIView):
         
         except Exception as e:
             return Response(status=status.HTTP_400_BAD_REQUEST, data={"error": str(e)})
+        
+        
+class ResetPassword(APIView):
+    def post(self, request):
+        try:
+            givendata = request.data
+            email = givendata.get('email')
+            password = givendata.get('password')
+            newpassword = givendata.get('newpassword')
+        
+            user = authenticate(email = email, password = password)
+            
+            if user is not None:
+                userdata = MyUser.objects.get(email = email)
+                print(userdata.password)
+                if userdata.check_password(password):
+                    user.set_password(newpassword)
+                    user.save()
+                    return Response("Password Reset successfullyy !!")
+                else:
+                    return Response("You've entered wrong Password...!!")
+                
+        except Exception as e :
+            return Response(str(e))
+
+import random    
+import time
+
+global_otp = 0
+class Forgetpassword(APIView):
+    def post(self, request):
+        givenemail = request.data["email"]
+        
+        try:
+            user = MyUser.objects.get(email = givenemail)
+            
+        except MyUser.DoesNotExist:
+            return Response("Create your account first !!")
+        
+        if givenemail is None:
+            return Response("Email is required !!!")
+        
+        global global_otp
+        global_otp = random.randint(1000, 9999)
+        
+        emailsend = EmailMessage(
+            "Forget Password subject",
+            f"your otp is : {global_otp}",
+            settings.EMAIL_HOST_USER,
+            [givenemail]
+        )
+        emailsend.send(fail_silently = False)
+        return Response({"status" : True, "message" : "email send succesfully !"})
+        
+
+class varify_password(APIView):
+    def post(self, request):
+        givendata = request.data 
+        email = request.data["email"]
+        given_otp = int(request.data["otp"])
+        
+        try:
+            user = MyUser.objects.get(email = email)
+            
+        except MyUser.DoesNotExist:
+            return Response("Create your account first !!")
+        
+        if given_otp == global_otp:
+            return Response("Email verified successfully !!")
+        
+        else:
+            return Response("Invalid OTP !!")
+        
+
+class NewPassword(APIView):
+    def post(self , reqeust):
+        email = reqeust.data["email"]
+        NewPassword = reqeust.data["NewPassword"]
+        
+        try:
+            user = MyUser.objects.get(email = email)
+            
+        except MyUser.DoesNotExist:
+            return Response("Create your account first !!")
+        
+        if email is not None:
+            user.set_password(NewPassword)
+            user.save()
+            return Response("your Password updated successfulyy !!")    
+        
+            

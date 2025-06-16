@@ -11,7 +11,6 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         # Add custom claims
         token['employee_id'] = user.employee.employee_id
-        # ...
 
         return token
 
@@ -202,35 +201,47 @@ class StatusUpdate(serializers.ModelSerializer):
         
         return instance
         
-        
-        
-        
-        
-            
+
+# --- Assign POC work !!
 class PocTicketSerializer(serializers.ModelSerializer):
     Improvementrecommendation = ImprovementSerializer(many=True ,write_only=True)
-    # Followupactions = FollowupSerializer(many = True) 
-    # Riskassessment = RiskAssessmentSerializer(many = True)
+    Followupactions = FollowupSerializer(many = True) 
+    Riskassessment = RiskAssessmentSerializer(many = True)
 
 
     class Meta:
         model = Incident_ticket
-        fields = ["Incidentid","Improvementrecommendation"] #,"Followupactions","Riskassessment"]
+        fields = ["Incidentid","Improvementrecommendation","Followupactions","Riskassessment"]
     
     
     def update(self, instance, validated_data):
         
         Impovement_list = validated_data.pop("Improvementrecommendation")   
-        print(Impovement_list)
+        FollowupActions = validated_data.pop("Followupactions")  
+        RiskAssessments = validated_data.pop("Riskassessment")
+        
+        
         for objectss in Impovement_list:
-            print(objectss)
-            
+        
             objectss["incidentid"] = instance
             
             #  --- Object Creation
             ImprovementRecommendationss = ImprovementRecommendation.objects.create(**objectss)
+          
+        
+        for actions in FollowupAction:
             
+            actions["incidentid"] = instance
             
+            # --- object Creation
+            FollowupActionss = FollowupAction.objects.create(**actions)
+            
+        
+        # for risks in RiskAssessments:
+            
+        #     risks["incidentid"] = instance
+             
+        
         return instance
 
         
@@ -252,6 +263,4 @@ class PocTicketSerializer(serializers.ModelSerializer):
         
         
         
-        
-        
-        
+         
