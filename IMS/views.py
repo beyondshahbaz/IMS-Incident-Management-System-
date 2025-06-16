@@ -71,8 +71,8 @@ class StatusUpdateViewSet(viewsets.ModelViewSet):
     serializer_class = StatusUpdate
     
 class PocTicketViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated, Rolepermissions]
-    authentication_classes = [JWTAuthentication]
+    # permission_classes = [IsAuthenticated, Rolepermissions]
+    # authentication_classes = [JWTAuthentication]
     queryset = Incident_ticket.objects.all()
     serializer_class = PocTicketSerializer
 
@@ -177,7 +177,6 @@ class varify_password(APIView):
             
         except MyUser.DoesNotExist:
             return Response("Create your account first !!")
-        
         
         if given_otp == global_otp:
             return Response("Email verified successfully !!")
