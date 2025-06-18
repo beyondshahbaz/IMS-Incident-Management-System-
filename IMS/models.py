@@ -32,7 +32,7 @@ class Role(models.Model):
     Name = models.CharField(max_length = 100)
     
     def __str__(self):
-        return f"Role: {self.Name}"
+        return f"{self.Name}"
 
 class MyUser(AbstractUser):
     id = models.AutoField(primary_key=True)
@@ -48,7 +48,7 @@ class Department(models.Model):
     Name = models.CharField(max_length = 50)
     
     def __str__(self):
-        return f"Department: {self.Name}"
+        return f"{self.Name}"
 
 class Employee(models.Model):
     employee_id = models.AutoField(primary_key = True)
@@ -58,21 +58,30 @@ class Employee(models.Model):
     user_id = models.OneToOneField("MyUser", on_delete=models.CASCADE, related_name = "employee")
 
     def __str__(self):
-        return f"Employee: {self.user_id}"
+        return f"{self.user_id}"
 
 class Department_poc(models.Model):
     id = models.AutoField(primary_key = True)
     department_id = models.ForeignKey(Department, on_delete = models.CASCADE  , related_name = "poccs")
     employee_id = models.ForeignKey(Employee, on_delete = models.CASCADE, related_name = "emppoc")
+    
+    def __str__(self):
+        return f"{self.employee_id.user_id}"
 
 class Contributing_factor(models.Model):
     id = models.AutoField(primary_key = True)
     Name = models.CharField(max_length = 100)
+    
+    def __str__(self):
+        return f"{self.Name}"
 
 class Incident_type(models.Model):
     id = models.AutoField(primary_key = True)
     Name = models.CharField(max_length = 100)
     department_id = models.ForeignKey(Department, on_delete = models.CASCADE)
+    
+    def __str__(self):
+        return f"{self.Name}"
 
 class Designation(models.Model):
     id = models.AutoField(primary_key = True)
@@ -80,7 +89,7 @@ class Designation(models.Model):
     department_id = models.ForeignKey(Department, on_delete = models.CASCADE)
     
     def __str__(self):
-        return f"Designation: {self.Name}"
+        return f"{self.Name}"
 
 class Stack_holder(models.Model):
     id = models.AutoField(primary_key = True)
@@ -89,15 +98,15 @@ class Stack_holder(models.Model):
 class ImprovementRecommendation(models.Model):
     id = models.AutoField(primary_key = True)
     Action = models.CharField(max_length = 700, null = True)
-    ResponsiblePerson = models.ForeignKey("Employee", on_delete = models.CASCADE, related_name="employee")
-    incidentid = models.ForeignKey("Incident_ticket", on_delete = models.CASCADE)
+    employee_id = models.ForeignKey("Employee", on_delete = models.CASCADE, related_name="employee")
+    Incidentid = models.ForeignKey("Incident_ticket", on_delete = models.CASCADE, related_name = "TikectRecommendation")
 
 class FollowupAction(models.Model):
     id = models.AutoField(primary_key = True)
     ActionTaken = models.CharField(max_length = 1000, null = True)
     DateCompleted = models.DateTimeField()
     ResponsiblePerson = models.ForeignKey("Employee", on_delete = models.CASCADE )
-    incidentid = models.ForeignKey("Incident_ticket", on_delete = models.CASCADE)
+    incidentid = models.ForeignKey("Incident_ticket", on_delete = models.CASCADE, related_name = "Followup")
 
 class ImmediateAction(models.Model):
     id = models.AutoField(primary_key = True)
@@ -109,19 +118,22 @@ class Severity(models.Model):
     id = models.AutoField(primary_key = True)
     Name = models.CharField(max_length = 100)
 
+    def __str__(self):
+        return f"{self.Name}"
+    
 class Recurrence(models.Model):
     id = models.AutoField(primary_key = True)
     Name = models.CharField(max_length = 100)
+    
+    def __str__(self):
+        return f"{self.Name}"
 
 class Risk(models.Model):
     id = models.AutoField(primary_key = True)
     Name = models.CharField(max_length = 100)
-
-class RiskAssessment(models.Model):
-    PotentialSeverity = models.ForeignKey("Severity", on_delete = models.CASCADE)
-    LikehoodRecurrence = models.ForeignKey("Recurrence", on_delete = models.CASCADE)
-    RiskLevel = models.ForeignKey("Risk", on_delete = models.CASCADE)
-    id = models.AutoField(primary_key = True)
+    
+    def __str__(self):
+        return f"{self.Name}"
 
 
 class Status(models.Model):
@@ -132,7 +144,7 @@ class StatusTime(models.Model):
     id = models.AutoField(primary_key = True)
     Date = models.DateTimeField(default = timezone.now)
     Statusid = models.ForeignKey("Status", on_delete = models.CASCADE, default = 1 )
-    incidentid = models.ForeignKey("Incident_ticket", on_delete = models.CASCADE)
+    incidentid = models.ForeignKey("Incident_ticket", on_delete = models.CASCADE , related_name = "Statuss")
     
 
 class Evidence(models.Model):
@@ -149,9 +161,11 @@ class Incident_ticket(models.Model):
     Assign_poc = models.ForeignKey("Department_poc", null = True,  on_delete = models.CASCADE, related_name = "assignpoc")
     department_id = models.ForeignKey("Department", on_delete=models.CASCADE)
     contributingfactor = models.ManyToManyField("Contributing_factor", db_table = "incident_factor")
-    Individualsinvolved = models.ManyToManyField("Employee", db_table = "Individuals", null=True, related_name="Ticketindividuals") #>>>
-    Witnesses = models.ManyToManyField("Employee", db_table = "Witnesstable", null=True, related_name="TicketWitnesses") #>>>
-    Improvementrecommendation = models.ManyToManyField("Employee", through = "ImprovementRecommendation", null = True, related_name="TicketImprovement") #>>>
-    Followupactions = models.ManyToManyField("Employee", through = "FollowupAction", null = True, related_name="TicketFollowup") #>>>
-    Riskassessment = models.ForeignKey("Riskassessment", on_delete =  models.CASCADE, null = True)
+    Individualsinvolved = models.ManyToManyField("Employee", db_table = "Individuals", null=True, related_name="Ticketindividuals")
+    Witnesses = models.ManyToManyField("Employee", db_table = "Witnesstable", null=True, related_name="TicketWitnesses")
+    Improvementrecommendation = models.ManyToManyField("Employee", through = "ImprovementRecommendation", null = True, related_name="ImprovementRecommendations") #>>>
+    Followupactions = models.ManyToManyField("Employee", through = "FollowupAction", null = True, related_name="TicketFollowup")
+    SeverityLevel = models.OneToOneField("Severity", on_delete = models.CASCADE, related_name = "SeverityLevels", null = True)
+    Recurrence = models.OneToOneField("Recurrence", on_delete = models.CASCADE, related_name = "Recurrencess", null = True)
+    Risk = models.OneToOneField("Risk", on_delete = models.CASCADE, related_name = "Riskss", null = True)
     Status = models.ManyToManyField("Status", through = "StatusTime", null=True, related_name="TicketStatus")

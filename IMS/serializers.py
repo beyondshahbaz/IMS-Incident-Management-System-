@@ -79,18 +79,12 @@ class Department_pocSerializer(serializers.ModelSerializer):
         model = Department_poc
         fields = '__all__'
 
-
 class StakeHolderSerializer(serializers.ModelSerializer):
     class Meta:
         models = Stack_holder
         fields = "__all__"
+
         
-class ImprovementSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ImprovementRecommendation
-        fields = "__all__"
-
-
 class FollowupSerializer(serializers.ModelSerializer):
     class Meta:
         model = FollowupAction
@@ -112,10 +106,27 @@ class ImmediateActionSerializer(serializers.ModelSerializer):
         model = ImmediateAction
         fields = "__all__"
         
-class RiskAssessmentSerializer(serializers.ModelSerializer):
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        idd = data.pop("id")
+        tokenid = data.pop("incidentid")
+        data["Employeeid"] = [ 
+            i["user_id"]["first_name"] + " " + i["user_id"]["last_name"] for i in EmployeeSerializer(instance.Employeeid , many=True).data ]
+        return data
+    # --- DONE*******************************
+    
+class ImprovementSerializer(serializers.ModelSerializer):
     class Meta:
-        model = RiskAssessment
+        model = ImprovementRecommendation
         fields = "__all__"
+    
+    # def to_representation(self, instance):
+    #     dataa = super().to_representation(instance)
+    #     idd = dataa.pop("id")
+    #     # incidentid = dataa.pop("Incidentid")
+    #     dataa["employee_id"] = instance.employee_id.user_id.first_name + " " + instance.employee_id.user_id.last_name
+    #     return dataa
+
 
 class EvidenceSerializer(serializers.ModelSerializer):
     class Meta:
@@ -124,6 +135,7 @@ class EvidenceSerializer(serializers.ModelSerializer):
 
 class TicketSerializer(serializers.ModelSerializer):
     ImmediateActions = ImmediateActionSerializer(many = True)
+    # ImprovementRecommendation = ImprovementSerializer(many = True)
     Status = StatusSerializer( many = True, read_only = True)
     
     class Meta:
@@ -140,6 +152,7 @@ class TicketSerializer(serializers.ModelSerializer):
         Witness = validated_data.pop("Witnesses")
         Pocc = validated_data.pop("Assign_poc")
         Action = validated_data.pop("ImmediateActions")
+        # Action = validated_data.pop("Improvementrecommendation")
         
         
         #  ---POC Assign
@@ -178,8 +191,72 @@ class TicketSerializer(serializers.ModelSerializer):
         for i in Witness:
             Ticket.Witnesses.add(i)
         
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        depar = data.pop("department_id")
+        ppp = data.pop("Assign_poc")
+        Incidentid = data.pop("Incidentid")
+        ccc = data.pop("contributingfactor")
         
-        return Ticket
+        data["Ticket_id"] = Incidentid
+        data["Reporter"] ={
+            "Name": instance.Reporter.user_id.first_name + " " + instance.Reporter.user_id.last_name ,
+            "Designation": instance.Reporter.Designation_id.Name,
+    }
+        data["Incident_type"] = instance.Incident_type.Name
+
+        data["Department"]= {
+            "id": instance.department_id.department_id ,
+            "Name" : instance.department_id.Name ,
+    }
+        if instance.Assign_poc is not None : 
+            data ["Assign_poc"]= {
+        "Name": instance.Assign_poc.employee_id.user_id.first_name + " " + instance.Assign_poc.employee_id.user_id.last_name
+    },
+        else:
+            data ["Assign_poc"]= ""
+
+        data ["Contributingfactor"] = [ 
+            i["Name"] for i in Contributing_factorsSerializer(instance.contributingfactor , many=True).data ]
+        
+        data ["Individualsinvolved"] = [ 
+            i["user_id"]["first_name"] + " " + i["user_id"]["last_name"] for i in EmployeeSerializer(instance.Individualsinvolved , many=True).data ]
+        
+        data ["Witnesses"] = [ 
+            i["user_id"]["first_name"] + " " + i["user_id"]["last_name"] for i in EmployeeSerializer(instance.Witnesses , many=True).data ]
+             
+        data["Improvementrecommendation"] = [ 
+                                             {
+                                                 "id":ir.id,
+                                                "Action" : ir.Action ,
+                                                "employee_id" : ir.employee_id.user_id.id,
+                                                "employee" : ir.employee_id.user_id.first_name + " " + ir.employee_id.user_id.last_name ,
+                                                "Incidentid" : ir.Incidentid.Incidentid
+                                             
+                                             } for ir in instance.TikectRecommendation.all()]
+        
+        data["Followupactions"] = [
+            {
+                "id" : fw.id ,
+                "ActionTaken" :fw.ActionTaken,
+                "DateCompleted" : fw.DateCompleted,
+                "ResponsiblePerson" : fw.ResponsiblePerson.user_id.id,
+                "incidentid" : fw.incidentid.Incidentid
+                
+            }   for fw in instance.Followup.all()
+        ]
+        
+        data["Status"] = [
+            {
+                "Name" : i.Statusid.Stutus,
+                "Date" : i.Date
+            }   for i in instance.Statuss.all()
+        ]
+        
+        data["SeverityLevel"] = instance.SeverityLevel.Name
+        data["Recurrence"] = instance.Recurrence.Name
+        data["Risk"] = instance.Risk.Name
+        return data
             
 
 
@@ -204,22 +281,19 @@ class StatusUpdate(serializers.ModelSerializer):
 
 # --- Assign POC work !!
 class PocTicketSerializer(serializers.ModelSerializer):
-    Improvementrecommendation = ImprovementSerializer(many=True ,write_only=True)
-    Followupactions = FollowupSerializer(many = True) 
-    Riskassessment = RiskAssessmentSerializer(many = True)
+    Improvementrecommendation = ImprovementSerializer(many=True , write_only=True)
+    Followupactions = FollowupSerializer(many = True)
 
 
     class Meta:
         model = Incident_ticket
-        fields = ["Incidentid","Improvementrecommendation","Followupactions","Riskassessment"]
+        fields = ["Incidentid","Improvementrecommendation","Followupactions"]
     
     
     def update(self, instance, validated_data):
         
         Impovement_list = validated_data.pop("Improvementrecommendation")   
-        FollowupActions = validated_data.pop("Followupactions")  
-        RiskAssessments = validated_data.pop("Riskassessment")
-        
+        FollowupActions = validated_data.pop("Followupactions")
         
         for objectss in Impovement_list:
         
@@ -236,16 +310,12 @@ class PocTicketSerializer(serializers.ModelSerializer):
             # --- object Creation
             FollowupActionss = FollowupAction.objects.create(**actions)
             
-        
-        # for risks in RiskAssessments:
-            
-        #     risks["incidentid"] = instance
-             
-        
         return instance
 
+
+
         
-        
+    
         
         
         
