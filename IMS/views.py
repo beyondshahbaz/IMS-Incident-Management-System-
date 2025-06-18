@@ -60,13 +60,14 @@ class TicketViewSet(viewsets.ModelViewSet):
     queryset = Incident_ticket.objects.all()
     serializer_class = TicketSerializer
     
+    
 class StatusViewSet(viewsets.ModelViewSet):
     queryset = Status.objects.all()
     serializer_class = StatusSerializer
 
 class StatusUpdateViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated, Rolepermissions]
-    authentication_classes = [JWTAuthentication]
+    # permission_classes = [IsAuthenticated, Rolepermissions]
+    # authentication_classes = [JWTAuthentication]
     queryset = Incident_ticket.objects.all()
     serializer_class = StatusUpdate
     
@@ -165,6 +166,7 @@ class Forgetpassword(APIView):
         emailsend.send(fail_silently = False)
         return Response({"status" : True, "message" : "email send succesfully !"})
         
+globalvarification = False
 
 class varify_password(APIView):
     def post(self, request):
@@ -179,8 +181,9 @@ class varify_password(APIView):
             return Response("Create your account first !!")
         
         if given_otp == global_otp:
+            global globalvarification
+            globalvarification = True
             return Response("Email verified successfully !!")
-        
         else:
             return Response("Invalid OTP !!")
         
@@ -195,10 +198,12 @@ class NewPassword(APIView):
             
         except MyUser.DoesNotExist:
             return Response("Create your account first !!")
-        
-        if email is not None:
-            user.set_password(NewPassword)
-            user.save()
-            return Response("your Password updated successfulyy !!")    
+        if globalvarification == True:
+            if email is not None:
+                user.set_password(NewPassword)
+                user.save()
+                return Response("your Password updated successfulyy !!")
+        else:
+            return Response("Hit Reset API first...!")
         
             
