@@ -79,3 +79,6 @@ pylint-global.rc
 *.bak
 *.swp
 *.tmp
+
+__pycache__/
+*.pyc
