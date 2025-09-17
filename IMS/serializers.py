@@ -253,9 +253,9 @@ class TicketSerializer(serializers.ModelSerializer):
             }   for i in instance.Statuss.all()
         ]
         
-        data["SeverityLevel"] = instance.SeverityLevel.Name
-        data["Recurrence"] = instance.Recurrence.Name
-        data["Risk"] = instance.Risk.Name
+        # # data["SeverityLevel"] = instance.SeverityLevel.Name
+        # data["Recurrence"] = instance.Recurrence.Name
+        # data["Risk"] = instance.Risk.Name
         return data
             
 
@@ -299,7 +299,7 @@ class PocTicketSerializer(serializers.ModelSerializer):
         
             objectss["incidentid"] = instance
             
-            #  --- Object Creation
+            #  --- Object Creation ---
             ImprovementRecommendationss = ImprovementRecommendation.objects.create(**objectss)
           
         
