@@ -25,8 +25,8 @@ SECRET_KEY = 'django-insecure-wzw)@s05l1b@i4f^%)-th!_$754)&e_+4g5ka#d=sb5t=^iuno
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-# ALLOWED_HOSTS = ['ims-incident-management-system.onrender.com']
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'ims-incident-management-system.onrender.com']
+ALLOWED_HOSTS = ['ims-incident-management-system.onrender.com']
+# ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'ims-incident-management-system.onrender.com']
 
 
 
