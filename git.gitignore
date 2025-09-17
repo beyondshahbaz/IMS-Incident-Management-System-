@@ -73,7 +73,7 @@ pylint-global.rc
 *.env
 
 # SQLite database files
-*.sqlite3
+# *.sqlite3
 
 # Miscellaneous
 *.bak
